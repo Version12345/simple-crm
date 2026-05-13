@@ -1,0 +1,22 @@
+{
+    "name": "simple-crm",
+    "private": true,
+    "version": "0.1.0",
+    "engines": {
+        "node": ">=20"
+    },
+    "workspaces": [
+        "code/client",
+        "code/server"
+    ],
+    "scripts": {
+        "dev": "concurrently -k -n client,server -c blue,magenta \"npm run dev -w @simple-crm/client\" \"npm run dev -w @simple-crm/server\"",
+        "build": "npm run build --workspaces --if-present",
+        "typecheck": "npm run typecheck --workspaces --if-present",
+        "lint": "npm run lint --workspaces --if-present",
+        "test": "npm run test --workspaces --if-present"
+    },
+    "devDependencies": {
+        "concurrently": "^9.1.0"
+    }
+}

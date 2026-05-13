@@ -1,0 +1,39 @@
+{
+    "name": "@simple-crm/server",
+    "version": "0.1.0",
+    "private": true,
+    "description": "SimpleCRM API server (Express + TypeORM + SQLite).",
+    "type": "commonjs",
+    "scripts": {
+        "dev": "nodemon",
+        "start": "ts-node --transpile-only src/index.ts",
+        "build": "tsc -p .",
+        "typecheck": "tsc -p . --noEmit",
+        "typeorm": "typeorm-ts-node-commonjs",
+        "seed": "ts-node --transpile-only src/seed.ts",
+        "test": "jest"
+    },
+    "jest": {
+        "preset": "ts-jest",
+        "testEnvironment": "node",
+        "testMatch": [
+            "**/*.test.ts"
+        ]
+    },
+    "dependencies": {
+        "express": "^5.0.0",
+        "reflect-metadata": "^0.2.2",
+        "sqlite3": "^5.1.7",
+        "typeorm": "^0.3.20"
+    },
+    "devDependencies": {
+        "@types/express": "^5.0.0",
+        "@types/jest": "^30.0.0",
+        "@types/node": "^22.10.0",
+        "jest": "^30.4.2",
+        "nodemon": "^3.1.7",
+        "ts-jest": "^29.4.9",
+        "ts-node": "^10.9.2",
+        "typescript": "^5.7.0"
+    }
+}
