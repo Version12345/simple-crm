@@ -37,7 +37,7 @@ export function bucketLabel(key: string, now: Date): string {
 
 /**
  * Groups a list of opportunities by the value of a custom field.
- * - Trims whitespace but preserves casing (so "NA" and "na" remain separate groups).
+ * - Trims whitespace but preserves casing and normalizing the value by converting them to uppercase.
  * - null / undefined / empty-string values land in the "—" group.
  * - Named groups are sorted alphabetically; "—" is always last.
  */
@@ -83,12 +83,16 @@ export function buildForecastGroups(opps: Opportunity[], fieldName: string): For
 export function assignBucketKey(opp: Opportunity, now: Date): string {
     const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
-    if (!opp.closeDate) return "no-date";
+    if (!opp.closeDate) {
+        return "no-date";
+    }
 
     const [year, month, day] = opp.closeDate.split("-").map(Number);
     const closeDate = new Date(year, month - 1, day);
 
-    if (closeDate < currentMonthStart) return "past";
+    if (closeDate < currentMonthStart) {
+        return "past";
+    }
 
     const closeBucketKey = `${closeDate.getFullYear()}-${String(closeDate.getMonth() + 1).padStart(2, "0")}`;
 
