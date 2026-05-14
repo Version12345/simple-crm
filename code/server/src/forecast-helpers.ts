@@ -56,7 +56,7 @@ export function buildForecastGroups(opps: Opportunity[], fieldName: string): For
         const value =
             raw === null || raw === undefined || String(raw).trim() === ""
                 ? "—"
-                : String(raw).trim();
+                : String(raw).trim().toUpperCase();
 
         if (!groupMap.has(value)) groupMap.set(value, []);
         groupMap.get(value)!.push(opp);

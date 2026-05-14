@@ -244,7 +244,7 @@ export const Forecast: React.FC = () => {
                                         <th className="border border-gray-200 px-4 py-3 text-left font-semibold">
                                             {customFields.find(f => f.name === groupBy)?.label ?? groupBy}
                                         </th>
-                                        <th className="border border-gray-200 px-4 py-3 text-right font-semibold">%</th>
+                                        <th className="border border-gray-200 px-4 py-3 text-right font-semibold">Pipeline Share (%)</th>
                                     </>
                                 )}
                                 <th className="border border-gray-200 px-4 py-3 text-right font-semibold">Count</th>
