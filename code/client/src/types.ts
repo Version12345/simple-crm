@@ -75,3 +75,25 @@ export interface ForecastReport {
     expectedValue: number;
     buckets: ForecastBucket[];
 }
+
+// ── Kanban board ──────────────────────────────────────────────────────────────
+
+export interface KanbanCard {
+    id: number;
+    name: string | null;
+    status: StageStatus;        // from the card's stage — drives badge color
+    expectedValue: number;
+    closeDate: string | null;
+}
+
+export interface KanbanColumn {
+    id: number;
+    name: string;
+    status: StageStatus;
+    order: number;
+    opportunities: KanbanCard[];
+}
+
+export interface KanbanBoardData {
+    columns: KanbanColumn[];
+}

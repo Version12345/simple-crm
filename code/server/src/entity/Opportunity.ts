@@ -27,4 +27,8 @@ export class Opportunity {
 
     @Column("simple-json", { nullable: true })
     customFields: Record<string, string | number> = {};
+
+    // Position within its stage column; lower = higher in the list
+    @Column({ default: 0 })
+    order: number;
 }

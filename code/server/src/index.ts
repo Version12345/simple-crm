@@ -290,6 +290,89 @@ const run = async () => {
         res.json({ totalValue, expectedValue, byStage });
     });
 
+    // Kanban board endpoint
+    app.get("/kanban", async (req, res) => {
+        const stages = await AppDataSource.manager
+            .getRepository(Stage)
+            .find({ order: { order: "ASC" } });
+
+        // Sort by user-defined order first; fall back to id for ties (e.g. on first load)
+        const opportunities = await AppDataSource.manager
+            .getRepository(Opportunity)
+            .find({ order: { order: "ASC", id: "ASC" } });
+
+        const columns = stages.map(stage => {
+            const stageOpps = opportunities.filter(opp => opp.stage.id === stage.id);
+            return {
+                id: stage.id,
+                name: stage.name,
+                status: stage.status,
+                order: stage.order,
+                opportunities: stageOpps.map(opp => ({
+                    id: opp.id,
+                    name: opp.name ?? null,
+                    status: opp.stage.status,
+                    expectedValue: opp.expectedValue ?? 0,
+                    closeDate: opp.closeDate ?? null,
+                })),
+            };
+        });
+
+        res.json({ columns });
+    });
+
+    // Kanban reorder endpoint — persists card order (and stage) after any drag
+    // Body: { columns: { stageId: number; opportunityIds: number[] }[] }
+    // Each column entry lists its opportunity ids in the desired display order.
+    // For within-column drags only `order` is updated.
+    // For cross-column drags `stage`, `expectedValue`, and stage denorm totals are also updated.
+    app.patch("/kanban/reorder", async (req, res) => {
+        const columns: { stageId: number; opportunityIds: number[] }[] = req.body.columns;
+
+        const settings = await AppDataSource.manager.getRepository(AppSetting).find();
+        const wonLikelihood = parseFloat(settings.find(s => s.key === "wonStageLikelihood")?.value ?? "1");
+        const lostLikelihood = parseFloat(settings.find(s => s.key === "lostStageLikelihood")?.value ?? "0");
+
+        const oppRepo = AppDataSource.manager.getRepository(Opportunity);
+        const stageRepo = AppDataSource.manager.getRepository(Stage);
+
+        for (const col of columns) {
+            const newStage = await stageRepo.findOne({ where: { id: col.stageId } });
+            if (!newStage) continue;
+
+            for (let i = 0; i < col.opportunityIds.length; i++) {
+                const opp = await oppRepo.findOne({ where: { id: col.opportunityIds[i] } });
+                if (!opp) continue;
+
+                opp.order = i;
+
+                if (opp.stage.id !== col.stageId) {
+                    // Cross-column move — recalculate expectedValue and update stage denorm totals
+                    const oldStage = opp.stage;
+                    const oldExpectedValue = opp.expectedValue ?? 0;
+
+                    const likelihood = newStage.status === "won" ? wonLikelihood
+                        : newStage.status === "lost" ? lostLikelihood
+                        : newStage.conversionLikelihood;
+                    const newExpectedValue = opp.value * likelihood;
+
+                    oldStage.expectedValue = (oldStage.expectedValue ?? 0) - oldExpectedValue;
+                    await stageRepo.save(oldStage);
+
+                    newStage.expectedValue = (newStage.expectedValue ?? 0) + newExpectedValue;
+                    await stageRepo.save(newStage);
+
+                    opp.stage = newStage;
+                    opp.expectedValue = newExpectedValue;
+                }
+
+                await oppRepo.save(opp);
+            }
+        }
+
+        res.json({ success: true });
+    });
+
     app.listen(3000, () => {
         console.log("Server is running on http://localhost:3000");
     });
